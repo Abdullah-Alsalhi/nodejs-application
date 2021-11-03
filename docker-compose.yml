@@ -1,0 +1,52 @@
+version: '2.2'
+services:
+  web:
+    container_name: web
+    build: 
+      context: ./frontend
+    ports: 
+      - 80:3000
+    environment:
+      API_URL: http://api:3001/data
+    depends_on:
+      - api
+    # volumes:
+    #   - ./frontend:/home/node/app
+    networks:
+      - public_network
+  api:
+    container_name: api
+    build:
+      context: ./backend
+    # volumes:
+    #   - ./backend:/home/node/app
+    environment:
+      CONNECTION_STRING: postgres://Abdullah:Dojo@123@postgres/dojo_courses
+    depends_on:
+      - postgres
+    networks:
+      - public_network
+      - private_network
+  postgres:
+    container_name: postgres
+    image: postgres:11.2-alpine
+    volumes:
+      - pg_volume:/var/lib/postgresql/data
+      - ./sql_scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: Abdullah
+      POSTGRES_PASSWORD: Dojo@123
+      POSTGRES_DB: dojo_courses
+    networks:
+      - private_network
+networks:
+  public_network:
+    name: public_network
+    driver: bridge
+  private_network:
+    name: private_network
+    driver: bridge
+volumes:
+  pg_volume:
